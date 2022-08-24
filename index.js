@@ -74,7 +74,7 @@ let persons = [
   }
 ]
 
-app.get('/home', (request, response) => {
+app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
 })
 
@@ -88,21 +88,21 @@ app.get('/info', (request, response) => {
   )
 })
 
-// app.get('/api/notes', (request, response) => {
-//   response.json(notes)
-// })
+app.get('/api/notes', (request, response) => {
+  response.json(notes)
+})
 
 app.get('/api/persons', (request, response) => {
   response.json(persons)
 })
 
-// app.get('/api/notes/:id', (request, response) => {
-//   const id = Number(request.params.id)
-//   const note = notes.find(note => note.id === id)
-//   note ? response.json(note) : response.status(404).end()
-//   console.log(note)
-//   response.json(note)
-// })
+app.get('/api/notes/:id', (request, response) => {
+  const id = Number(request.params.id)
+  const note = notes.find(note => note.id === id)
+  note ? response.json(note) : response.status(404).end()
+  console.log(note)
+  response.json(note)
+})
 
 app.get('/api/persons/:id', (request, response) => {
   const id = Number(request.params.id)
@@ -112,12 +112,12 @@ app.get('/api/persons/:id', (request, response) => {
   response.json(person)
 })
 
-// app.delete('/api/notes/:id', (request, response) => {
-//   const id = Number(request.params.id)
-//   notes = notes.filter(note => note.id !== id)
+app.delete('/api/notes/:id', (request, response) => {
+  const id = Number(request.params.id)
+  notes = notes.filter(note => note.id !== id)
 
-//   response.status(204).end()
-// })
+  response.status(204).end()
+})
 
 app.delete('/api/persons/:id', (request, response) => {
   const id = Number(request.params.id)
@@ -126,17 +126,22 @@ app.delete('/api/persons/:id', (request, response) => {
   response.status(204).end()
 })
 
-
 const generateId = () => {
-  const maxId = notes.length > 0
+  const maxId = note.length > 0
     ? Math.max(...notes.map(n => n.id))
     : 0
   return maxId + 1
 }
 
-app.post('/api/notes', (request, response) => {
-  const body = request.body
+const generatePersonId = () => {
+  const maxId = persons.length > 0
+    ? Math.max(...persons.map(n => n.id))
+    : 0
+  return maxId + 1
+}
 
+app.post('/api/notes/', (request, response) => {
+  const body = request.body
   if (!body.content) {
     return response.status(400).json({ 
       error: 'content missing' 
@@ -144,38 +149,43 @@ app.post('/api/notes', (request, response) => {
   }
 
   const note = {
-    content: body.content,
-    important: body.important || false,
+    content : body.content,
+    important : body.important || false,
     date: new Date(),
     id: generateId(),
   }
-
   notes = notes.concat(note)
-
+  console.log(note)
   response.json(note)
 })
 
-app.get('/api/notes', (req, res) => {
-  res.json(notes)
-})
+app.post('/api/persons/', (request, response) => {
+  const body = request.body
+  const uniqueName = persons.find(person => person.name === body.name)
 
-app.delete('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id)
-  notes = notes.filter(note => note.id !== id)
-
-  response.status(204).end()
-})
-
-app.get('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const note = notes.find(note => note.id === id)
-
-  if (note) {
-    response.json(note)
-  } else {
-    response.status(404).end()
+  if (!body.name || !body.number) {
+    return response.status(400).json({ 
+      error: 'name & number missing' 
+    })
+  } else if (uniqueName) {
+    return response.status(400).json({
+      error: "name must be unique"
+    })
   }
+
+  const person = {
+    name: body.name,
+    number: body.number,
+    id: generatePersonId()
+  }
+  persons = persons.concat(person)
+  console.log(person)
+  response.json(person)
 })
+
+
+//morgan.token('type', function (req, res) { return req.headers['content-type'] })
+
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
@@ -183,7 +193,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.Port || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
