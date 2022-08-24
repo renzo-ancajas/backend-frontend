@@ -74,7 +74,7 @@ let persons = [
   }
 ]
 
-app.get('/', (request, response) => {
+app.get('/home', (request, response) => {
   response.send('<h1>Hello World!</h1>')
 })
 
